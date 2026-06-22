@@ -1274,18 +1274,8 @@ for each agent in onlineAgents {
 
 The Workflow Academy is a Zoho developer/consultant community with 80+ public repos of Deluge scripts covering CRM, Desk, Flow, Analytics, Books, Creator, and more.
 
-### Local Clone
-The most relevant repos (CRM, Desk, Flow, Analytics) have been cloned to `Zoho/ExternalReferences/` for offline reference and local search:
 
-| Topic | Cloned Repos |
-|-------|-------------|
-| **CRM** | `api-pagination-zohocrm`, `Zoho-CRM-Custom-Connections`, `Zoho-CRM-Updating-Multi-Select-Lookup-Deluge`, `Zoho-CRM-Trigger-Workflow-Assignment-Rule-Deluge`, `ComplexAssignmentRulesViaCRMmodule`, `Deluge-Null-Check-Tips`, `Sort-lists-containing-maps-by-key`, `Round-Robin-Owner-Assignment-Deluge`, `Setting_Up_Schedules_In_Zoho_CRM_Automations`, `Trigger-Functions-from-Notes-Create-or-Edit-Zoho-CRM`, `Move-Blueprint-Transition-via-Deluge`, `Custom-Related-List-Zoho-CRM-Deluge-Custom-Function`, `How-to-Clone-Zoho-CRM-Records`, `Zoho-CRM-bulk-APIs-for-Mass-Update`, `ZohoCRM-DateTime-Field-Comparison-Deluge`, `Date-Time-Format-Conversion-Zoho-Deluge`, `Zoho-CRM-Serverless-Function` |
-| **Desk** | `Zoho-Desk-API-Search-Records` |
-| **Analytics** | `custom-analytics-links`, `Sales-Funnel-SQL-Table`, `Fill-in-Date-Ranges-in-Analytics`, `picklist-history-analysis-with-SQL`, `ranking-in-SQL`, `SQL-Timeline` |
-| **Flow** | `Zoho-Flow-Sign-and-Books-Integration` |
-
-### Remaining Repos (Online Only)
-The remaining ~55 repos (Books, Creator, Inventory, Campaigns, WorkDrive, etc.) are available directly at https://github.com/TheWorkflowAcademy — browse as needed.
+The repos (Books, Creator, Inventory, Campaigns, WorkDrive, etc.) are available directly at https://github.com/TheWorkflowAcademy — browse as needed.
 
 ---
 
