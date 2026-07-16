@@ -385,7 +385,7 @@ if (utDateTime < oldestTime) { isOlder = true; }
 - Rename corrected Set Variable steps (e.g., "(Option‑4)") to avoid mixing with older steps.
 - Add a temporary **echo** step to log `${flow.agentPresenceCache}` and `${flow.agentsOnlineCountCache}` before the function during stabilization.
 
-### 2.6 CRITICAL: Flow Variables Do NOT Persist Across Trigger Events
+### 2.8 CRITICAL: Flow Variables Do NOT Persist Across Trigger Events
 **Important Discovery (Feb 2026):** Flow variables are **transaction-scoped**. Each trigger event (e.g., "Agent availability changed") creates a **new transaction**, and Flow variables reset to empty/undefined for each new transaction.
 
 **The Problem:**
@@ -414,7 +414,7 @@ cfgUpd = {"columns": {...}, "criteria": "...", "addIfNotExist": true};
 - Flow parser has issues with `""quoted""` escaping
 - Use string concatenation instead: `"\"" + "fieldname" + "\"'='value'"`
 
-### 2.7 Flow Execution Latency (Mar 2026)
+### 2.9 Flow Execution Latency (Mar 2026)
 **Important Discovery:** Zoho Flow has execution latency between trigger and custom function execution.
 
 **Observed Behavior:**
@@ -433,7 +433,7 @@ cfgUpd = {"columns": {...}, "criteria": "...", "addIfNotExist": true};
 - Allow 15-30 seconds between trigger and result
 - "Pending" status is normal, not an error state
 
-### 2.8 Counting Pattern for Presence Tracking (Feb 2026)
+### 2.10 Counting Pattern for Presence Tracking (Feb 2026)
 When tracking agent presence and needing accurate counts:
 
 **Problem:** If you READ → COUNT → UPDATE, the count reflects the PREVIOUS state (before update).
@@ -457,7 +457,7 @@ onlineCount = countOnlineAgents(allAgents2); // Now reflects new state
 
 This ensures `onlineCount` is accurate in the return value.
 
-### 2.9 Connections Are Environment-Specific (CRITICAL)
+### 2.11 Connections Are Environment-Specific (CRITICAL)
 
 **Each Zoho environment (Flow, Desk, SalesIQ) has its own isolated Connection pool.** A connection created in Desk is NOT visible in Flow, and vice versa. When deploying custom functions:
 
@@ -469,7 +469,7 @@ This ensures `onlineCount` is accurate in the return value.
 - Zoho Analytics: `ZohoAnalytics.data.all`, `ZohoReports.data.ALL`
 - Zoho Desk: `Desk.tickets.READ`, `Desk.tickets.WRITE`, `Desk.tickets.UPDATE`
 
-**Vengies Flow function `ReasignOpenCountAgents` expects two connections:**
+**YOUR_Company Flow function `ReasignOpenCountAgents` expects two connections:**
 - `flow2analyticsagentsonline` — Zoho Analytics (for Analytics v2 REST: GET /data, PUT /rows, DELETE /rows)
 - `deskagentsonline` — Zoho Desk (for zoho.desk.update to recycle/assign tickets)
 
@@ -1351,11 +1351,11 @@ for each agent in onlineAgents {
 
 **Important:** Only counts tickets matching the department filter. Agent may have tickets in other departments - these don't count toward capacity.
 
-### 7.19 SalesIQ Workflow Deluge — Empirically Verified Constraints (Jul 2026)
+### 7.18 SalesIQ Workflow Deluge — Empirically Verified Constraints (Jul 2026)
 
 SalesIQ Workflows have their own Deluge engine that differs from both Desk and Flow. These findings are from trial-and-error testing with `conversation.completed` event workflows.
 
-#### 7.19.1 Event Object Structure
+#### 7.18.1 Event Object Structure
 
 SalesIQ Workflows use an `entity` object to pass event data. The structure differs significantly from what Zoho docs suggest — empirical discovery via `entity.toString()` dumps is essential. `keySet()` is NOT available.
 
@@ -1373,7 +1373,7 @@ SalesIQ Workflows use an `entity` object to pass event data. The structure diffe
 | `department_id` | string | Department ID (NOT a sub-object) | `"1016171000000002022"` |
 | `thread_number` | number | Thread count | `1` |
 | `app_id` | string | SalesIQ app/widget ID | `"1016171000000002236"` |
-| `chat_initiated_url` | string | Page where chat started | `"https://tictacbets.co.za/page/home"` |
+| `chat_initiated_url` | string | Page where chat started | `"https://www.yourcompany.com/page/home"` |
 | `opened_time` | string | Epoch milliseconds (start) | `"1783078179418"` |
 | `end_time` | string | Epoch milliseconds (end) | `"1783079044227"` |
 
@@ -1399,7 +1399,7 @@ SalesIQ Workflows use an `entity` object to pass event data. The structure diffe
 - ✅ `visitor` sub-object exists as expected
 - ✅ `ended_by` value is `"agent"` (lowercase), not `"Operator"`
 
-#### 7.19.2 Verified Working Constructs
+#### 7.18.2 Verified Working Constructs
 
 | Construct | Status | Notes |
 |-----------|--------|-------|
@@ -1423,7 +1423,7 @@ SalesIQ Workflows use an `entity` object to pass event data. The structure diffe
 | `invokeUrl` with `parameters:` Map | ✅ Works | GET params can be passed as Map instead of URL string (Test K) |
 | Connections in invokeUrl | ✅ Works | `connection: "literal_name"` — literal string required (Test B, D, E, G, J) |
 
-#### 7.19.3 Verified Non-Working Constructs
+#### 7.18.3 Verified Non-Working Constructs
 
 | Construct | Error Message | Alternative |
 |-----------|---------------|-------------|
@@ -1436,11 +1436,11 @@ SalesIQ Workflows use an `entity` object to pass event data. The structure diffe
 | `zoho.desk.*` (any) | Same parse error | Desk integration tasks NOT imported in SalesIQ Deluge. |
 | `zoho.desk.searchRecords` | Same parse error | Parse-time failure, not runtime. Cannot be try/caught. |
 | `zoho.reports.createRow` | Connection validation error | Connections from Desk/Flow don't carry over. Create in SalesIQ separately. |
-| `replaceAll("{", ...)` | `{ is not a valid regular expression` | `replaceAll` uses Java regex. Use `replaceAll("[{]", ...)` for literal braces. See §7.19.12 for full regex escaping guide. |
+| `replaceAll("{", ...)` | `{ is not a valid regular expression` | `replaceAll` uses Java regex. Use `replaceAll("[{]", ...)` for literal braces. See §7.18.12 for full regex escaping guide. |
 
-#### 7.19.4 v5.3 Probe — Confirmed Capabilities (Jul 2026)
+#### 7.18.4 v5.3 Probe — Confirmed Capabilities (Jul 2026)
 
-The full capability map, built across v5.0–v5.3 iterations. The v5.3 probe (`Zoho/Vengies/salesiq_probe_v5_deluge.txt`) tested 12 capabilities across both Desk and Analytics Connections.
+The full capability map, built across v5.0–v5.3 iterations. The v5.3 probe (`salesiq_probe_v5_deluge.txt`) tested 12 capabilities across both Desk and Analytics Connections.
 
 **Connection Setup:**
 - `desk_connection` → Zoho Desk, scopes: `Desk.tickets.READ`, `Desk.tickets.WRITE`, `Desk.tickets.UPDATE`
@@ -1468,7 +1468,7 @@ The Desk API tickets endpoint (`/api/v1/tickets`) does NOT support `email` or `c
 
 **Note on `zoho.reports.createRow`:** ❌ Fails at validation in SalesIQ. Connection references are checked at validation time, not runtime. Try/catch does NOT bypass this. Connections from Desk/Flow do not carry over — must be configured in SalesIQ separately.
 
-#### 7.19.5 Known Differences From Other Environments
+#### 7.18.5 Known Differences From Other Environments
 
 | Feature | Flow | Desk | SalesIQ |
 |---------|------|------|---------|
@@ -1490,7 +1490,7 @@ The Desk API tickets endpoint (`/api/v1/tickets`) does NOT support `email` or `c
 | External API (non-Zoho) | ✅ Works | ✅ Works | ✅ Works (40s timeout, Test F) |
 | `parameters:` Map in invokeUrl | ✅ Works | ✅ Works | ✅ Works (Test K) |
 
-#### 7.19.6 Debug Strategy for SalesIQ
+#### 7.18.6 Debug Strategy for SalesIQ
 
 Since `keySet()` is unavailable and the `entity` structure is undocumented, use a two-phase approach:
 
@@ -1500,7 +1500,7 @@ Deploy a probe that dumps `entity.toString()` via `info` statements, then inspec
 **Phase 2 — Hard-coded access (after discovery):**
 Replace the dump with targeted `.get()` calls using the discovered key names. All `.get()` returns must use `ifnull(..., "")` guards since nullable fields are common.
 
-#### 7.19.7 Workflow Setup — Action Platform Selection (Critical)
+#### 7.18.7 Workflow Setup — Action Platform Selection (Critical)
 
 When creating a SalesIQ Data Workflow, the **Action Platform** step offers three choices:
 - **Webhooks** — POST event data to external URL
@@ -1511,7 +1511,7 @@ When creating a SalesIQ Data Workflow, the **Action Platform** step offers three
 
 **Always select Deluge Script** under Actions when running custom logic.
 
-#### 7.19.8 Return Type Constraint (Critical)
+#### 7.18.8 Return Type Constraint (Critical)
 
 **Discovery:** SalesIQ Workflow Deluge scripts MUST return a **Map** value. Returning a string (even via `return "v1"`) causes:
 
@@ -1529,7 +1529,7 @@ return result;
 
 Note: Despite the return-type error, the script **does execute** — all `info` statements above the `return` line fire successfully and appear in execution logs. The execution is marked "failed" only because of the invalid return type.
 
-#### 7.19.9 CRITICAL: Parse-Time vs Runtime Errors
+#### 7.18.9 CRITICAL: Parse-Time vs Runtime Errors
 
 **Discovery:** In SalesIQ Deluge, if the parser does not recognize a variable/namespace (e.g., `zoho.authtoken`), it fails at **parse time**, before any code executes. This means:
 
@@ -1544,7 +1544,7 @@ Note: Despite the return-type error, the script **does execute** — all `info` 
 
 **Anything outside that set must be deployed and tested — failure is parse-time, not catchable.**
 
-#### 7.19.10 invokeUrl Connection Parameter — Literal String Required
+#### 7.18.10 invokeUrl Connection Parameter — Literal String Required
 
 **Discovery (2026-07-05):** The `connection` parameter of `invokeUrl` in SalesIQ Deluge requires a **literal CONNECTION LINKNAME** type, not a STRING variable.
 
@@ -1562,7 +1562,7 @@ resp = invokeUrl [ url: url type: GET connection: "desk_connection" ];
 
 **Rule:** Always hard-code the connection name as a literal string in the `connection:` parameter. Variables that resolve to strings are not accepted.
 
-#### 7.19.11 Null Safety Pattern (SalesIQ-Specific)
+#### 7.18.11 Null Safety Pattern (SalesIQ-Specific)
 
 Every chained `.get()` must be null-guarded at EVERY level — both the sub-object AND the field within it:
 ```deluge
@@ -1577,7 +1577,7 @@ if(visitorMap != null) {
 }
 ```
 
-### 7.19.12 SalesIQ `replaceAll` Has a Regex Pre-Validator
+### 7.18.12 SalesIQ `replaceAll` Has a Regex Pre-Validator
 
 **Critical Discovery (2026-07-06–07, v5.5–v5.7 probes):** SalesIQ's Deluge engine has a **regex pre-validator** that validates `replaceAll` patterns at **parse time** (not runtime). Invalid patterns crash the entire script — try/catch does NOT help. The pre-validator is stricter than Java's `Pattern.compile()`.
 
@@ -1620,7 +1620,7 @@ encStr = encStr.replaceAll("'", "%27");
 ```
 The remaining characters (`{`, `}`, alphanumerics) work without encoding in Zoho Analytics URLs.
 
-### 7.19.13 Analytics v2 Write from SalesIQ — Definitive Working Pattern
+### 7.18.13 Analytics v2 Write from SalesIQ — Definitive Working Pattern
 
 **Discovered across v5.4–v5.9 (Jul 2026).** Writing to Analytics from SalesIQ Deluge is possible but required solving 4 separate errors in sequence:
 
@@ -1683,7 +1683,7 @@ if(respStr.contains("\"status\":\"failure\""))
 }
 ```
 
-### 7.19.14 URL Encoding vs zoho.encryption.urlEncode
+### 7.18.14 URL Encoding vs zoho.encryption.urlEncode
 
 | Environment | Method | Availability |
 |-------------|--------|-------------|
@@ -1693,7 +1693,7 @@ if(respStr.contains("\"status\":\"failure\""))
 
 SalesIQ's `zoho` built-in only exposes `zoho.currenttime`. All other `zoho.*` references cause parse-time failures.
 
-### 7.19.15 Known `ended_by` Values (Empirically Verified)
+### 7.18.15 Known `ended_by` Values (Empirically Verified)
 
 | Value | Description | Discovered |
 |-------|-------------|-----------|
@@ -1705,7 +1705,7 @@ SalesIQ's `zoho` built-in only exposes `zoho.currenttime`. All other `zoho.*` re
 
 Note: The raw `ended_by` uses lowercase (`"agent"`, `"bot"`). Map to display labels in your script.
 
-### 7.19.16 Architectural Decision: SalesIQ for Capture, Desk for Mutation (Jul 2026)
+### 7.18.16 Architectural Decision: SalesIQ for Capture, Desk for Mutation (Jul 2026)
 
 **Critical lesson from v5.0–v5.9 probes:** SalesIQ Deluge and Desk Deluge are fundamentally different environments. Trying to do ticket mutation in SalesIQ is the wrong architecture.
 
@@ -1713,7 +1713,7 @@ Note: The raw `ended_by` uses lowercase (`"agent"`, `"bot"`). Map to display lab
 
 | Responsibility | Run In | Why |
 |----------------|--------|-----|
-| Capture conversation data | **SalesIQ Workflow → Analytics** | SalesIQ has the `entity` object with conversation data. Analytics v2 write is possible (§7.19.13). |
+| Capture conversation data | **SalesIQ Workflow → Analytics** | SalesIQ has the `entity` object with conversation data. Analytics v2 write is possible (§7.18.13). |
 | Read/update Desk tickets | **Desk Workflow Rule → Desk Function** | Desk has `zoho.desk.*` integration tasks, `invokeUrl` + PUT /rows for Analytics writes (§9.6.1), and no regex pre-validator. |
 | Cross-system orchestration | **Zoho Flow** | Flow has both Desk and Analytics v2 access, plus `zoho.encryption.urlEncode`. |
 
@@ -1757,7 +1757,7 @@ Write to Analytics (v2)        Apply business logic          Management view
 
 **Key insight:** The SalesIQ → Desk integration creates the ticket. We don't need to link them from SalesIQ. Instead, a Desk workflow rule catches the ticket update, reads the full ticket state from `getRecordById`, and applies any needed corrections.
 
-### 7.19.17 Desk Custom Function Trigger Patterns
+### 7.18.17 Desk Custom Function Trigger Patterns
 
 When building Desk custom functions triggered by workflow rules, the parameter mapping differs from CRM/Creator:
 
@@ -1774,7 +1774,7 @@ ticket = zoho.desk.getRecordById(orgId, "tickets", id.toString(), "connection");
 // Now access any field: ticket.get("Subject"), ticket.get("Ticket Owner"), etc.
 ```
 
-### 7.19.18 probe Iteration Summary (v1–v5.9)
+### 7.18.18 probe Iteration Summary (v1–v5.9)
 
 | Version | Key Change | Result |
 |---------|-----------|--------|
@@ -1791,7 +1791,7 @@ ticket = zoho.desk.getRecordById(orgId, "tickets", id.toString(), "connection");
 | v5.8 | Added `ZANALYTICS-ORGID` header | ✅ Header sent; ❌ Decimal in number column |
 | v5.9 | `.toLong()` for duration, `"scheduler"` label | ✅ **Row written to Analytics** |
 
-### 7.19.19 SalesIQ → Desk Hook Timing (Empirically Verified Jul 2026)
+### 7.18.19 SalesIQ → Desk Hook Timing (Empirically Verified Jul 2026)
 
 **Discovery:** When SalesIQ creates a Desk ticket, the workflow rule fires at ticket creation **START** — before the ticket ID is written back to the SalesIQ Conversation record.
 
@@ -1813,7 +1813,7 @@ ticket = zoho.desk.getRecordById(orgId, "tickets", id.toString(), "connection");
 
 **Rule:** Do not attempt to read the Desk ticket ID from the SalesIQ Conversation record inside a ticket-creation hook. It will always be null.
 
-### 7.20 Hook Best Practices for Ticket Assignment
+### 7.19 Hook Best Practices for Ticket Assignment
 
 **Issue:** Trigger hook firing incorrectly or not at all.
 
@@ -1943,7 +1943,7 @@ See also §1.6 for the complete try/catch probing pattern.
 |------------|------|------|---------|
 | Return type | Map | VOID | Map |
 | Event object | `trigger` | None (hook params) | `entity` |
-| Analytics API | v2 REST (via `invokeurl`) | v2 REST via `invokeurl` + PUT /rows + CONFIG (`zoho.reports.*` are silent no-ops — see §9.6.1) | ✅ v2 REST via `analytics_connection` — requires `ZANALYTICS-ORGID` header + manual URL encoding (see §7.19.13) |
+| Analytics API | v2 REST (via `invokeurl`) | v2 REST via `invokeurl` + PUT /rows + CONFIG (`zoho.reports.*` are silent no-ops — see §9.6.1) | ✅ v2 REST via `analytics_connection` — requires `ZANALYTICS-ORGID` header + manual URL encoding (see §7.18.13) |
 | `else` | ❌ Forbidden | ✅ Works | ✅ Works |
 | `continue` | ❌ Forbidden | ✅ Works | ⬜ Untested |
 | `instanceof` | ❌ Forbidden | ✅ Works | ⬜ Untested |
@@ -1974,18 +1974,18 @@ See also §1.6 for the complete try/catch probing pattern.
 | Blank lines before `try` are safe in Desk | Causes "Improper Statement" in Desk | §7.9.1 |
 | `invokeurl` returns error map on 4xx/5xx | Throws script error — must wrap in try/catch | §1.2.1 |
 | API response types are stable | Deluge auto-casts — always probe type dynamically | §1.6 |
-| `now()` works in all Deluge environments | ❌ Fails in SalesIQ — use `zoho.currenttime` | §7.19 |
-| `keySet()` works in all Deluge environments | ❌ Fails in SalesIQ — use `entity.toString()` to discover keys | §7.19 |
-| SalesIQ Deluge = Desk Deluge | They are different engines — SalesIQ has stricter function availability | §7.19 |
-| `invokeUrl` works in SalesIQ like Desk/Flow | ✅ Confirmed working via v5.3 probe | §7.19.4 |
-| Desk Ticket ID exists in `conversation.completed` payload | ❌ NOT present — cannot directly update ticket from SalesIQ workflow | §7.19.1 |
-| `keySet()` works on invokeUrl response Maps | ❌ Fails on ALL Maps in SalesIQ — use `containsKey()` for known keys | §7.19.3 |
-| Desk API supports `email` search parameter | ❌ UNPROCESSABLE_ENTITY — tickets endpoint does NOT accept `email` param | §7.19.4 |
-| Analytics v2 API can write from SalesIQ (`PUT /rows`) | ✅ **Confirmed working** — use `PUT /rows?CONFIG=<manual-encoded>` with `ZANALYTICS-ORGID` header and `addIfNotExist: true`. Only safe `replaceAll` chars: `\"`, `:`, `,`, ` `, `'`. Leave `{}` raw. HTTP 200 with failure body is a silent-failure trap — always check response. | §7.19.13, §7.19.14 |
-| Desk Ticket ID available in `conversation.completed` entity | ❌ NOT in the payload — ticket may not exist yet when event fires | §7.19.1 |
-| SalesIQ can directly update Desk tickets | ❌ Wrong architecture — SalesIQ lacks `zoho.desk.*`, ticket ID discovery, and email search. Use Desk workflow rules instead. | §7.19.16 |
+| `now()` works in all Deluge environments | ❌ Fails in SalesIQ — use `zoho.currenttime` | §7.18 |
+| `keySet()` works in all Deluge environments | ❌ Fails in SalesIQ — use `entity.toString()` to discover keys | §7.18 |
+| SalesIQ Deluge = Desk Deluge | They are different engines — SalesIQ has stricter function availability | §7.18 |
+| `invokeUrl` works in SalesIQ like Desk/Flow | ✅ Confirmed working via v5.3 probe | §7.18.4 |
+| Desk Ticket ID exists in `conversation.completed` payload | ❌ NOT present — cannot directly update ticket from SalesIQ workflow | §7.18.1 |
+| `keySet()` works on invokeUrl response Maps | ❌ Fails on ALL Maps in SalesIQ — use `containsKey()` for known keys | §7.18.3 |
+| Desk API supports `email` search parameter | ❌ UNPROCESSABLE_ENTITY — tickets endpoint does NOT accept `email` param | §7.18.4 |
+| Analytics v2 API can write from SalesIQ (`PUT /rows`) | ✅ **Confirmed working** — use `PUT /rows?CONFIG=<manual-encoded>` with `ZANALYTICS-ORGID` header and `addIfNotExist: true`. Only safe `replaceAll` chars: `\"`, `:`, `,`, ` `, `'`. Leave `{}` raw. HTTP 200 with failure body is a silent-failure trap — always check response. | §7.18.13, §7.18.14 |
+| Desk Ticket ID available in `conversation.completed` entity | ❌ NOT in the payload — ticket may not exist yet when event fires | §7.18.1 |
+| SalesIQ can directly update Desk tickets | ❌ Wrong architecture — SalesIQ lacks `zoho.desk.*`, ticket ID discovery, and email search. Use Desk workflow rules instead. | §7.18.16 |
 | `zoho.reports.*` functions work in Desk Deluge | ⚠️ **Silent no-op** — `zoho.reports.createRow()` returns success but does NOT write data in Desk (v11, Jul 2026). Use `invokeUrl` + PUT /rows + CONFIG instead. | §9.6.1 |
-| SalesIQ and Desk Deluge are interchangeable | ❌ Fundamentally different engines. SalesIQ: no `zoho.desk.*`, no `keySet()`, regex pre-validator. Desk: full `zoho.desk.*`, `keySet()` works, no regex issues. | §7.19.16 |
+| SalesIQ and Desk Deluge are interchangeable | ❌ Fundamentally different engines. SalesIQ: no `zoho.desk.*`, no `keySet()`, regex pre-validator. Desk: full `zoho.desk.*`, `keySet()` works, no regex issues. | §7.18.16 |
 | Desk can read Analytics tables (`zoho.reports.getData`) | ❌ `getData` does NOT exist in Desk Deluge. `zoho.reports.createRow()`/`updateData()`/`deleteRow()` are **silent no-ops** in Desk — return success without writing. Use `invokeUrl` + PUT /rows + CONFIG for Desk → Analytics writes. For Analytics reads from Desk, use a Zoho Flow intermediary. | §9.5, §9.6.1 |
 
 ### 9.6.1 Environment Write Paths: Desk vs SalesIQ (Final Correction, Jul 2026)
