@@ -70,3 +70,8 @@ If the user request contradicts a constraint verified in this guide, prioritize 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
 
 Contributions, issue reports, and updates regarding new Zoho environment discoveries are always welcome! Feel free to submit a Pull Request.
+
+---
+## Thanks: 
+
+Special thanks to Leon Kotze of Zoho for forcing me to do this.
