@@ -25,7 +25,7 @@ This repository consolidates live, empirically verified operational discoveries 
 To get the absolute best results when using this guide with an AI coder (such as Claude 3.5 Sonnet, GPT-4o, or an IDE agent like Cursor/Windsurf), inject the raw content directly into the prompt context.
 
 ### System Prompt / Context Injection Template
-Copy and paste this instruction block into your AI tool alongside the `MyZohoGuide.md` content:
+Copy and paste this instruction block into your AI tool alongside the `ZohoGuideRoot.md` content:
 
 ```text
 You are an expert compiler for the Zoho Deluge engine. 
