@@ -34,9 +34,14 @@ This guide consolidates live, empirically verified operational discoveries (coll
 
 ---
 
+## Advice from the autor 
+It's not in the guide to do so, but i instruct my agent to make and keep a txt file for each deluge code module we work on, and a csv file for every table we create. It's also been usefull to use versioning, were old txt file is copied to create new, that is then updated. Using txt files for deluge code allows easy error free copy and paste, as well as giving the agent easy access to the code. Files describing tables do a similar finction. On top of that i also keep a project dossier md file for the agent to make notes on the project like view id's, to do, ect.
+
+--- 
+
 ## RAG & AI Agent Ingestion Instructions
 
-To get the absolute best results when using this guide with an AI coder (such as Claude 3.5 Sonnet, GPT-4o, or an IDE agent like Cursor/Windsurf), inject the raw content directly into the prompt context.
+To get the absolute best results when using this guide with an AI coder (such as Opencode with Big Pickle Zen, or Claude 3.5 Sonnet, GPT-4o, or an IDE agent like Cursor/Windsurf), inject the raw content directly into the prompt context, or even better, download and save the files locally and have your agent ingest them at every zoho session statup.
 
 ### System Prompt / Context Injection Template
 Copy and paste this instruction block into your AI tool alongside the `ZohoGuideRoot.md` content:
